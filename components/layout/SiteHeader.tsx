@@ -3,17 +3,61 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+type UserInfo = {
+  email: string
+  name: string
+}
 
 const navItems = [
   { label: '홈', href: '/' },
   { label: '도서', href: '/books' },
   { label: '커뮤니티', href: '/community' },
-  { label: '마이페이지', href: '/mypage' }, // ✅ 추가된 부분
+  { label: '마이페이지', href: '/mypage' },
 ]
 
 export default function SiteHeader() {
   const pathname = usePathname()
+  const router = useRouter()
+  const [user, setUser] = useState<UserInfo | null>(null)
+
+  useEffect(() => {
+    const loadUser = () => {
+      const email = localStorage.getItem('userEmail')
+      const name = localStorage.getItem('userName')
+
+      if (email) {
+        setUser({
+          email,
+          name: name || email.split('@')[0],
+        })
+      } else {
+        setUser(null)
+      }
+    }
+
+    loadUser() // 최초 1회
+
+    // ✅ 로그인/로그아웃 이벤트 감지
+    window.addEventListener('auth-change', loadUser)
+
+    return () => {
+      window.removeEventListener('auth-change', loadUser)
+    }
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('userEmail')
+    localStorage.removeItem('userName')
+
+    // ✅ 로그아웃 알림
+    window.dispatchEvent(new Event('auth-change'))
+
+    setUser(null)
+    router.push('/login')
+  }
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
@@ -45,11 +89,22 @@ export default function SiteHeader() {
           ))}
         </nav>
 
-        {/* 로그인 버튼 */}
+        {/* 로그인 / 사용자 영역 */}
         <div className="site-header-auth">
-          <Link href="/login" className="site-login-button">
-            로그인
-          </Link>
+          {user ? (
+            <div className="btn">
+              <Link href="/mypage" className="site-user-name">
+                {user.name}님
+              </Link>
+              <button onClick={handleLogout} className="btn">
+                로그아웃
+              </button>
+            </div>
+          ) : (
+            <Link href="/login" className="btn">
+              로그인
+            </Link>
+          )}
         </div>
       </div>
     </header>

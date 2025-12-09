@@ -73,9 +73,10 @@ export default function LoginPage() {
 
   return (
     <section className="section">
-      <h1>로그인</h1>
+      <h1 className="section-title">로그인</h1>
 
       <input
+        className="input"
         type="email"
         placeholder="이메일"
         value={email}
@@ -83,6 +84,7 @@ export default function LoginPage() {
       />
 
       <input
+        className="input"
         type="password"
         placeholder="비밀번호"
         value={password}
@@ -91,7 +93,7 @@ export default function LoginPage() {
 
       {message && <p>{message}</p>}
 
-      <button onClick={handleLogin} disabled={loading}>
+      <button className="btn" onClick={handleLogin} disabled={loading}>
         {loading ? '확인 중…' : '로그인'}
       </button>
 
@@ -99,7 +101,7 @@ export default function LoginPage() {
       {showSignupSuggestion && (
         <div>
           <p>아직 계정이 없는 이메일입니다.</p>
-          <button onClick={() => router.push('/signup')}>
+          <button className="btn" onClick={() => router.push('/signup')}>
             회원가입 하시겠습니까?
           </button>
         </div>
