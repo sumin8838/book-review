@@ -6,17 +6,32 @@ export type Review = {
   nickname: string
   rating: number
   content: string
-  createdAt?: string
+  createdAt: string
 }
 
 export const reviews: Review[] = [
   {
-    id: 'review-1',
-    bookId: 'TRpHDgAAQBAJ',
-    nickname: '가연',
+    id: 'r1',
+    bookId: '1',
+    nickname: '민수',
     rating: 5,
-    content:
-      '스토리가 신선하고 그림체도 너무 예뻐서 금방 빠져들었다. 추천하고 싶은 책!',
-    createdAt: '2025-12-07',
+    content: 'Beautiful and poetic.',
+    createdAt: '2024-01-10',
+  },
+  {
+    id: 'r2',
+    bookId: '2',
+    nickname: '아라',
+    rating: 4,
+    content: 'Very practical and life-changing.',
+    createdAt: '2024-02-05',
+  },
+  {
+    id: 'r3',
+    bookId: '1',
+    nickname: '지훈',
+    rating: 3,
+    content: 'A bit slow but still good.',
+    createdAt: '2024-03-12',
   },
 ]

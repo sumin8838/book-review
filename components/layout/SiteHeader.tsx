@@ -1,4 +1,5 @@
 // components/layout/SiteHeader.tsx
+
 'use client'
 
 import Link from 'next/link'
@@ -8,6 +9,7 @@ const navItems = [
   { label: '홈', href: '/' },
   { label: '도서', href: '/books' },
   { label: '커뮤니티', href: '/community' },
+  { label: '마이페이지', href: '/mypage' }, // ✅ 추가된 부분
 ]
 
 export default function SiteHeader() {
@@ -21,11 +23,13 @@ export default function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-header-inner">
+        {/* 로고 */}
         <Link href="/" className="site-logo">
           <span className="site-logo-pill" />
           <span>보안형 독서 리뷰</span>
         </Link>
 
+        {/* 네비게이션 */}
         <nav className="site-nav">
           {navItems.map((item) => (
             <Link
@@ -40,6 +44,13 @@ export default function SiteHeader() {
             </Link>
           ))}
         </nav>
+
+        {/* 로그인 버튼 */}
+        <div className="site-header-auth">
+          <Link href="/login" className="site-login-button">
+            로그인
+          </Link>
+        </div>
       </div>
     </header>
   )
