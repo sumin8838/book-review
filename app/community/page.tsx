@@ -1,27 +1,50 @@
 // app/community/page.tsx
 
 import Link from 'next/link'
-import { communityPosts, comments } from '@/lib/data/community'
+import { communityPosts } from '@/lib/data/community'
+import { connectDB } from '@/lib/mongodb'
+import Post from '@/models/Post'
+import Comment from '@/models/Comment'
 
 type CommunityPageProps = {
-  searchParams?: {
-    category?: string
-  }
+  searchParams: { category?: string }
 }
 
-export default function CommunityPage({
-  searchParams = {}, // ✅ 핵심: 기본값
+export default async function CommunityPage({
+  searchParams,
 }: CommunityPageProps) {
-  const currentCategory =
-    typeof searchParams.category === 'string' ? searchParams.category : '전체'
+  await connectDB()
 
-  // 카테고리 목록 생성
-  const categorySet = new Set(communityPosts.map((p) => p.category))
+  // MongoDB 글 가져오기
+  const dbPosts = await Post.find().sort({ createdAt: -1 }).lean()
+
+  // 모든 댓글 가져오기 (DB + 하드코딩)
+  const dbComments = await Comment.find().lean()
+
+  // 하드코딩 데이터와 합치기
+  const allPosts = [
+    ...dbPosts.map((p) => ({
+      id: p._id.toString(),
+      title: p.title,
+      category: p.category,
+      content: p.content,
+      excerpt: p.content.slice(0, 100),
+      createdAt: p.createdAt.toISOString(),
+      nickname: p.nickname,
+      hasPoll: p.hasPoll,
+    })),
+    ...communityPosts,
+  ]
+
+  const currentCategory = searchParams?.category ?? '전체'
+
+  // 카테고리 목록
+  const categorySet = new Set(allPosts.map((p) => p.category))
   const categories = ['전체', ...Array.from(categorySet)]
 
-  // 댓글 수 계산
-  const postsWithStats = communityPosts.map((post) => {
-    const commentCount = comments.filter((c) => c.postId === post.id).length
+  // 댓글 수 계산 (DB 기반)
+  const postsWithStats = allPosts.map((post) => {
+    const commentCount = dbComments.filter((c) => c.postId === post.id).length
     return { ...post, commentCount }
   })
 
@@ -41,7 +64,6 @@ export default function CommunityPage({
 
   return (
     <div className="page">
-      {/* 헤더 */}
       <header className="section-header">
         <h1 className="section-title">커뮤니티</h1>
         <p className="section-description">
@@ -49,7 +71,6 @@ export default function CommunityPage({
         </p>
       </header>
 
-      {/* 카테고리 탭 */}
       <nav className="tabs">
         {categories.map((cat) => {
           const isActive = currentCategory === cat
@@ -57,7 +78,6 @@ export default function CommunityPage({
             cat === '전체'
               ? '/community'
               : `/community?category=${encodeURIComponent(cat)}`
-
           return (
             <Link
               key={cat}
@@ -70,17 +90,15 @@ export default function CommunityPage({
         })}
       </nav>
 
-      {/* 툴바 */}
       <div className="section-toolbar">
         <p className="muted-text">
           총 {sortedPosts.length}개의 게시글이 있습니다.
         </p>
-        <button type="button" className="btn btn-outline">
-          + (예정) 게시글 작성하기
-        </button>
+        <Link href="/community/new" className="btn btn-outline">
+          + 게시글 작성하기
+        </Link>
       </div>
 
-      {/* 게시글 목록 */}
       {sortedPosts.length === 0 ? (
         <p className="muted-text">
           아직 이 카테고리에 해당하는 게시글이 없습니다. 첫 글을 남겨보세요!
